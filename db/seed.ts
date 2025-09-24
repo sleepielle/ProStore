@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import sampleData from "./sample-data";
 
 //async function bc the prisma methods are async

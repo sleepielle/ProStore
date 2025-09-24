@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
-  },
+  },  
+    "prisma": {
+      "schema": "./prisma/schema"
+    }
+  ,
+  
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
     "@prisma/adapter-neon": "^6.16.2",
