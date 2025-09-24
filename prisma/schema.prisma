@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// * To generate the client, bc that generates the methods to work with the model 
+// 1. we need to add a script in the package.json for postinstall
+// 2. run npx prisma generate locally
+// 3. run npx prisma migrate dev --name init, where the needed sql commands are generated
+//4. use npx prisma studio to check the data locally
+//5. use seeder to add sample data to the db
+model Product {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String   @unique(map: "product_slug_idx")
+  category    String
+  description String
+  images      String[]
+  brand       String
+  banner      String?
+  stock       Int
+  numReviews  Int      @default(0)
+  price       Decimal  @default(0) @db.Decimal(12, 2)
+  rating      Decimal  @default(0) @db.Decimal(3, 2)
+  isFeatured  Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+}
+
+/**
+ * SAMPLE DATA
+ * {
+ * name: 'Polo Sporting Stretch Shirt',
+ * slug: 'polo-sporting-stretch-shirt',
+ * category: "Men's Dress Shirts",
+ * description: 'Classic Polo style with modern comfort',
+ * images: [
+ * '/images/sample-products/p1-1.jpg',
+ * '/images/sample-products/p1-2.jpg',
+ * ],
+ * price: 59.99,
+ * brand: 'Polo',
+ * rating: 4.5,
+ * numReviews: 10,
+ * stock: 5,
+ * isFeatured: true,
+ * banner: 'banner-1.jpg',
+ * },
+ */
