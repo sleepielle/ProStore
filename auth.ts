@@ -58,8 +58,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig.callbacks,
     async session({ session, user, trigger, token }) {
       // Set the user ID from the token
-      session.user.id = token.sub;
-      session.user.role = token.role;
+      //session.user.id = token.sub;
+      //session.user.role = token.role;
       session.user.name = token.name;
 
       // If there is an update, set the user name
@@ -73,7 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Assign user fields to token
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        // token.role = user.role;
 
         // If user has no name then use the email
         if (user.name === "NO_NAME") {
