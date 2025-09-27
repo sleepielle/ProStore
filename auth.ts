@@ -1,19 +1,19 @@
 import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/db/prisma";
+import { cookies } from "next/headers";
+import { compare } from "bcrypt-ts-edge";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compareSync } from "bcrypt-ts-edge";
-import type { NextAuthConfig } from "next-auth";
 
-export const config = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/sign-in",
     error: "/sign-in",
   },
   session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days,
-    // Note: This option is ignored if using JSON Web Tokens
+    strategy: "jwt" as const,
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -23,23 +23,23 @@ export const config = {
         password: { type: "password" },
       },
       async authorize(credentials) {
-        if (credentials === null) return null;
+        if (credentials == null) return null;
 
-        //find user in database
+        // Find user in database
         const user = await prisma.user.findFirst({
           where: {
             email: credentials.email as string,
           },
         });
 
-        //Check if user exists and if the password matches
+        // Check if user exists and if the password matches
         if (user && user.password) {
-          const isMatch = compareSync(
+          const isMatch = await compare(
             credentials.password as string,
             user.password
           );
 
-          // If assword is correct, return user
+          // If password is correct, return user
           if (isMatch) {
             return {
               id: user.id,
@@ -49,38 +49,50 @@ export const config = {
             };
           }
         }
-
-        // If user does not exist or password does not match, return null
+        // If user does not exist or password does not match return null
         return null;
       },
     }),
   ],
-
   callbacks: {
+    ...authConfig.callbacks,
     async session({ session, user, trigger, token }) {
-      // Set the user Id and role from the token when available
-      if (session?.user) {
-        if (token?.sub) {
-          session.user.id = token.sub;
-        }
-        if (token && "role" in token && token.role) {
-          // @ts-expect-error augmented by next-auth.d.ts
-          session.user.role = token.role;
-        }
-      }
+      // Set the user ID from the token
+      session.user.id = token.sub;
+      session.user.role = token.role;
+      session.user.name = token.name;
 
-      // If the name changes, update the session too
-      if (trigger === "update" && session?.user && user?.name) {
+      // If there is an update, set the user name
+      if (trigger === "update") {
         session.user.name = user.name;
       }
 
       return session;
     },
-  },
-} satisfies NextAuthConfig;
+    async jwt({ token, user, trigger, session }) {
+      // Assign user fields to token
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
 
-// handlers: object that has the http handlers for the endpoints nextauth uses. this helps the nextauth api routes
-// auth handles the sessions and checks if the user is signed in or not
-// if no sign in user, redirect to signin page
-// if user signedout, redirect to signout page
-export const { handlers, auth, signIn, signOut } = NextAuth(config);
+        // If user has no name then use the email
+        if (user.name === "NO_NAME") {
+          token.name = user.email!.split("@")[0];
+
+          // Update database to reflect the token name
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { name: token.name },
+          });
+        }
+      }
+
+      // Handle session updates
+      if (session?.user.name && trigger === "update") {
+        token.name = session.user.name;
+      }
+
+      return token;
+    },
+  },
+});
