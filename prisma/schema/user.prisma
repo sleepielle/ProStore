@@ -12,4 +12,5 @@ model User {
     updatedAt     DateTime  @updatedAt
     account       Account[]
     session       Session[]
+    cart          Cart[]
 }
