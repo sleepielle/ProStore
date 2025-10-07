@@ -19,25 +19,50 @@ export function formatNumberWithDecimal(num: number): string {
 //Format errors
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatError(error: any) {
-  //The following erros where identified by using clg(error.name, error.email,etc) in the user.actions.ts signUpUser()
+  // Prefer name/code when available, but don't assume shapes
+  if (error?.name === "ZodError") {
+    const issues = Array.isArray(error.issues) ? error.issues : [];
+    if (issues.length > 0) {
+      // Example: "shippingPrice: Price must have exactly two decimal places"
 
-  // These are the errors that occur when an user tries to sign up and all the fields are empty
-  if (error.name === "ZodError") {
-    //returns zod array with data, the field is an index in the array
-    const fieldErrors = Object.keys(error.errors).map(
-      (field) => error.errors[field].message
-    );
-
-    return fieldErrors.join("\n ");
-  } else if (
-    error.name === "PrismaClientKnownRequestError" &&
-    error.code === "P2002"
-  ) {
-    const field = error.meta?.target ? error.meta.target[0] : "Field";
-    return `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
-  } else {
+      return (
+        issues
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((i: any) => {
+            const path =
+              Array.isArray(i.path) && i.path.length ? i.path.join(".") : "";
+            return path ? `${path}: ${i.message}` : i.message;
+          })
+          .join("\n")
+      );
+    }
+    // Fallback for odd Zod shapes
     return typeof error.message === "string"
       ? error.message
-      : JSON.stringify(error.message);
+      : "Validation error";
+  }
+
+  if (
+    error?.name === "PrismaClientKnownRequestError" &&
+    error?.code === "P2002"
+  ) {
+    const field = error.meta?.target?.[0] ?? "Field";
+    return `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
+  }
+
+  return typeof error?.message === "string"
+    ? error.message
+    : JSON.stringify(error?.message ?? "Unknown error");
+}
+
+// Round number to 2 decimal places
+export function roundToTwoDecimalPlaces(value: number | string) {
+  if (typeof value === "number") {
+    // Number.epsilon helps avoid floating point arithmetic issues
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  } else if (typeof value === "string") {
+    return (Math.round(Number(value) + Number.EPSILON) * 100) / 100;
+  } else {
+    throw new Error("Value is not a number or string");
   }
 }

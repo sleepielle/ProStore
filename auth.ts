@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/db/prisma";
-import { cookies } from "next/headers";
 import { compare } from "bcrypt-ts-edge";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -55,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return token;
     },
+
     async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       const isRelativeUrl = url.startsWith("/");
       if (isRelativeUrl) {
