@@ -69,6 +69,19 @@ export async function signUpUser(prevState: unknown, formData: FormData) {
   }
 }
 
+// Get user by the ID
+export async function getUserById(userId: string) {
+  const user = await prisma.user.findFirst({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  } else {
+    return user;
+  }
+}
+
 /*
 Server actions  eliminate the need for you to create an API route (/api/...) + fetch it with fetch() just to pass some data around. Instead we just call the server action like a normal function
 
