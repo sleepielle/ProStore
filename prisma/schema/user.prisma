@@ -13,4 +13,5 @@ model User {
     account       Account[]
     session       Session[]
     cart          Cart[]
+    order         Order[]
 }

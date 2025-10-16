@@ -12,7 +12,6 @@ import { prisma } from "@/db/prisma";
 import { cartItemSchema, insertCartSchema } from "../zod-validators";
 import { revalidatePath } from "next/cache";
 import z from "zod";
-import { Cart, Prisma } from "@prisma/client";
 
 // Calculate cart prices
 

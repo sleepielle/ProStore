@@ -6,18 +6,19 @@
 //5. use seeder to add sample data to the db
 
 model Product {
-    id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+    id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
     name        String
-    slug        String   @unique(map: "product_slug_idx")
+    slug        String      @unique(map: "product_slug_idx")
     category    String
     description String
     images      String[]
     brand       String
     banner      String?
     stock       Int
-    numReviews  Int      @default(0)
-    price       Decimal  @default(0) @db.Decimal(12, 2)
-    rating      Decimal  @default(0) @db.Decimal(3, 2)
-    isFeatured  Boolean  @default(false)
-    createdAt   DateTime @default(now()) @db.Timestamp(6)
+    numReviews  Int         @default(0)
+    price       Decimal     @default(0) @db.Decimal(12, 2)
+    rating      Decimal     @default(0) @db.Decimal(3, 2)
+    isFeatured  Boolean     @default(false)
+    createdAt   DateTime    @default(now()) @db.Timestamp(6)
+    orderItem   OrderItem[]
 }

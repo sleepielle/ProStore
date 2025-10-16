@@ -5,6 +5,7 @@ import { prisma } from "@/db/prisma";
 import { compare } from "bcrypt-ts-edge";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { cookies } from "next/headers";
+import { clear } from "console";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
